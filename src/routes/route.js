@@ -5,6 +5,7 @@ const urlController = require("../Controller/urlController")
 
 
 router.post("/url/shorten",urlController.createUrl)
+ router.get("/:urlCode",urlController.redirectURL)
 
 //API for wrong route-Of-API
 router.all("/**", function (req, res) {
