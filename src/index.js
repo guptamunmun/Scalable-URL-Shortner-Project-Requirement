@@ -1,28 +1,24 @@
-const express =require("express")
-const mongoose = require("mongoose")
-const route = require('./routes/route')
-// var shortUrl = require("node-url-shortener");
+const express = require('express')
+const mongoose = require('mongoose')
 const app = express()
+const route = require('./Routes/routes');
 
 
 app.use(express.json())
-app.use(express.urlencoded({extended:false}))
 
-mongoose.connect("mongodb+srv://priyanka99:EorbzmKpqdV7ml9W@cluster0.puozp1a.mongodb.net/Group56Database?retryWrites=true&w=majority",{
-useNewUrlParser:true})
-
-.then(()=> console.log("MongoDb is connected"))
-.catch(err => console.log(err))
-
-app.use('/', route)
-// url shortener
+app.use(express.urlencoded({ extended: true }))
 
 
-// shortUrl.short("https://github.com/sabihak89/plutonium/tree/project/url_shortner#url-shorten-response", function (err, url) {
-//     console.log(url);
-// });
-
-
-app.listen(process.env.PORT || 3000, function () {
-    console.log('Express app running on port ' + (process.env.PORT || 3000))
+mongoose.connect("mongodb+srv://priyanka99:EorbzmKpqdV7ml9W@cluster0.puozp1a.mongodb.net/Group56Database?retryWrites=true&w=majority", {
+    useNewUrlParser: true
 })
+
+    .then(() => console.log("MongoDB is Connected..."))
+    .catch((err) => console.log(err.message))
+
+app.use('/', route);
+
+
+app.listen(3000, function () {
+    console.log('Express app running on port ' +(3000))
+});
