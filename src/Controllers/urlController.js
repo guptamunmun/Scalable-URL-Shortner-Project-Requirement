@@ -27,7 +27,8 @@ redisClient.on("error", async function (err) {
 
 //Connection setup for redis
 const GET_ASYNC = promisify(redisClient.GET).bind(redisClient);
-const SET_ASYNC = promisify(redisClient.SET).bind(redisClient)
+const SETEX_ASYNC = promisify(redisClient.SETEX).bind(redisClient)
+
 
 
 //========================================= creating short url ==============================================
@@ -63,7 +64,8 @@ const createUrl = async function (req, res) {
         if (correctLink == false) {
             return res.status(400).send({ status: false, message: "Provide correct longurl!!" })
         };
-
+        
+        
         //If URL already Present in cache
         const cachedLongUrl = await GET_ASYNC(`${longUrl}`)
         if (cachedLongUrl) {
@@ -77,8 +79,6 @@ const createUrl = async function (req, res) {
             return res.status(409).send({ status: true,msg:"longUrl already exists", data: duplicateUrl }) //check the status code later
         }
       
-        
-        
 
         //=============================== generating a urlcode and shorturl =================================
         const urlCode = shortId.generate()
@@ -100,12 +100,13 @@ const createUrl = async function (req, res) {
         }
          //Set cache the newly created url
          if (urlCode) {
-            await SET_ASYNC(`${longUrl}`, JSON.stringify(urlCode))
+            await SETEX_ASYNC(`${longUrl}`,60*60, JSON.stringify(urlCode))
+            await SETEX_ASYNC(`${urlCode}`,60*60, JSON.stringify(longUrl))
         }
         return res.status(201).send({ status: true, message: "Short url Successfully created", data: urlCode })
     }
     catch (err) {
-        res.status(500).send({ error: err})
+        res.status(500).send({ error: err.message})
     }
 }
 
@@ -120,7 +121,7 @@ const getUrl = async function (req, res) {
         if (!shortId.isValid(urlCode)) {
             return res.status(400).send({ status: false, message: `Invalid urlCode: ${urlCode} provided` })
         }
-        console.log(urlCode, req.params)
+        // console.log(urlCode, req.params)
         //============================== if urlcode does not exist ======================================
         const cachedUrlCode = await GET_ASYNC(`${urlCode}`)
         if (cachedUrlCode) {
@@ -136,12 +137,12 @@ const getUrl = async function (req, res) {
 
         //========================= redirecting to the longurl =======================================
         
-        await SET_ASYNC(`${urlCode}`,isData.longUrl)
+        await SETEX_ASYNC(`${urlCode}`,60*60,isData.longUrl)
         return res.status(302).redirect(isData.longUrl) //302 redirect status response
 
     } 
       catch (err) {
-        res.status(500).send({ error: err})
+        res.status(500).send({ error: err.messege})
     }
 
 }
